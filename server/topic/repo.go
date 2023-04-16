@@ -3,6 +3,7 @@ package topic
 import (
 	"context"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -52,22 +53,29 @@ func (r *PgRepo) DropWeirdly(ctx context.Context) error {
 }
 
 func (r *PgRepo) Save(ctx context.Context, t *Topic) error {
-	_, err := r.pool.Exec(ctx,
-		`insert into topics
-		(id, category, title, capacity, owner, parties, created_at, updated_at, finished_at)
-		values ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-		t.ID, t.Cateogry, t.Title, t.Capacity, t.Owner, t.Parties, t.CreatedAt, t.UpdatedAt, t.FinishedAt)
+	sql, args, err := sq.Insert("topics").
+		Columns("id", "category", "title", "capacity", "owner", "parties", "created_at", "updated_at", "finished_at").
+		Values(t.ID, t.Cateogry, t.Title, t.Capacity, t.Owner, t.Parties, t.CreatedAt, t.UpdatedAt, t.FinishedAt).
+		PlaceholderFormat(sq.Dollar).ToSql()
 
+	if err != nil {
+		return err
+	}
+	_, err = r.pool.Exec(ctx, sql, args...)
 	return err
 }
 
 func (r *PgRepo) FindByID(ctx context.Context, id uuid.UUID) (*Topic, error) {
 	// var topic Topic
-	rows, err := r.pool.Query(ctx,
-		`select id, category, title, capacity, owner, parties, created_at, updated_at, finished_at
-		from topics where id=$1`,
-		id,
-	)
+	sql, args, err := sq.Select("id", "category", "title", "capacity", "owner", "parties", "created_at", "updated_at", "finished_at").
+		From("topics").
+		Where(sq.Eq{"id": id}).
+		PlaceholderFormat(sq.Dollar).ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := r.pool.Query(ctx, sql, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -75,12 +83,15 @@ func (r *PgRepo) FindByID(ctx context.Context, id uuid.UUID) (*Topic, error) {
 }
 
 func (r *PgRepo) FindByOwner(ctx context.Context, id uuid.UUID) ([]Topic, error) {
-	// var topic Topic
-	rows, err := r.pool.Query(ctx,
-		`select id, category, title, capacity, owner, parties, created_at, updated_at, finished_at
-		from topics where owner=$1 order by created_at`,
-		id,
-	)
+	sql, args, err := sq.Select("id", "category", "title", "capacity", "owner", "parties", "created_at", "updated_at", "finished_at").
+		From("topics").
+		Where(sq.Eq{"owner": id}).
+		OrderBy("created_at").
+		PlaceholderFormat(sq.Dollar).ToSql()
+	if err != nil {
+		return nil, err
+	}
+	rows, err := r.pool.Query(ctx, sql, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -88,11 +99,16 @@ func (r *PgRepo) FindByOwner(ctx context.Context, id uuid.UUID) ([]Topic, error)
 }
 
 func (r *PgRepo) FindInvolved(ctx context.Context, id uuid.UUID) ([]Topic, error) {
-	rows, err := r.pool.Query(ctx,
-		`select id, category, title, capacity, owner, parties, created_at, updated_at, finished_at
-		from topics where $1=any(parties) order by created_at`,
-		id,
-	)
+	sql, args, err := sq.Select("id", "category", "title", "capacity", "owner", "parties", "created_at", "updated_at", "finished_at").
+		From("topics").
+		Where("? = any(parties)", id).
+		OrderBy("created_at").
+		PlaceholderFormat(sq.Dollar).ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := r.pool.Query(ctx, sql, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -100,16 +116,32 @@ func (r *PgRepo) FindInvolved(ctx context.Context, id uuid.UUID) ([]Topic, error
 }
 
 func (r *PgRepo) Update(ctx context.Context, t *Topic) error {
-	_, err := r.pool.Exec(ctx,
-		`update topics
-		set category=$1, title=$2, capacity=$3, owner=$4, parties=$5, created_at=$6, updated_at=$7, finished_at=$8
-		where id=$9`,
-		t.Cateogry, t.Title, t.Capacity, t.Owner, t.Parties, t.CreatedAt, t.UpdatedAt, t.FinishedAt, t.ID)
+	sql, args, err := sq.Update("topics").
+		Set("category", t.Cateogry).
+		Set("title", t.Title).
+		Set("capacity", t.Capacity).
+		Set("owner", t.Owner).
+		Set("parties", t.Parties).
+		Set("updated_at", t.UpdatedAt).
+		Set("finished_at", t.FinishedAt).
+		Where(sq.Eq{"id": t.ID}).
+		PlaceholderFormat(sq.Dollar).ToSql()
+	if err != nil {
+		return err
+	}
+
+	_, err = r.pool.Exec(ctx, sql, args...)
 	return err
 }
 
 func (r *PgRepo) Delete(ctx context.Context, id uuid.UUID) error {
-	_, err := r.pool.Exec(ctx, `delete from topics where id=$1`, id)
+	sql, args, err := sq.Delete("topics").Where(sq.Eq{"id": id}).
+		PlaceholderFormat(sq.Dollar).ToSql()
+	if err != nil {
+		return err
+	}
+
+	_, err = r.pool.Exec(ctx, sql, args...)
 	return err
 }
 

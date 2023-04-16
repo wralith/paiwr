@@ -74,6 +74,7 @@ func TestFindByID(t *testing.T) {
 	err := repo.Save(context.Background(), &t1)
 	assert.NoError(t, err)
 	got, err := repo.FindByID(context.Background(), t1.ID)
+	assert.NoError(t, err)
 	assert.Equal(t, t1.Title, got.Title)
 	assert.WithinDuration(t, t1.CreatedAt, got.CreatedAt, time.Second)
 }
