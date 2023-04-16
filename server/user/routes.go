@@ -18,6 +18,18 @@ func NewRoutes(repo Repo) *Routes {
 	return &Routes{repo: repo}
 }
 
+// Register
+//
+//	@ID			User-Register
+//	@Summary	Register New User
+//	@Tags		users
+//	@Accept		json
+//	@Produce	json
+//	@Param		options	body	CreateUserOpts	true	"New User Info"
+//	@Success	201
+//	@Failure	400
+//	@Failure	500
+//	@Router		/users/register [post]
 func (r *Routes) Register(c *fiber.Ctx) error {
 	var input CreateUserOpts
 	err := c.BodyParser(&input)
@@ -44,6 +56,19 @@ type LoginInput struct {
 }
 
 // TODO: Send Token
+
+// Login
+//
+//	@ID			User-Login
+//	@Summary	Login With Credentials
+//	@Tags		users
+//	@Accept		json
+//	@Produce	json
+//	@Param		credentials	body	LoginInput	true	"User Credentials"
+//	@Success	200
+//	@Failure	400
+//	@Failure	500
+//	@Router		/users/login [post]
 func (r *Routes) Login(c *fiber.Ctx) error {
 	var input LoginInput
 	err := c.BodyParser(&input)
@@ -59,6 +84,18 @@ func (r *Routes) Login(c *fiber.Ctx) error {
 	return c.SendStatus(fiber.StatusOK)
 }
 
+// FindByID
+//
+//	@ID			User-FindByID
+//	@Summary	Find User By ID
+//	@Tags		users
+//	@Accept		json
+//	@Produce	json
+//	@Param		id	path		string	true	"User ID"
+//	@Success	200	{object}	User
+//	@Failure	400
+//	@Failure	500
+//	@Router		/users/{id} [get]
 func (r *Routes) FindByID(c *fiber.Ctx) error {
 	input := c.Params("id")
 	id, err := uuid.Parse(input)
@@ -80,6 +117,18 @@ type UpdatePasswordInput struct {
 	NewPassword string `json:"new_password"`
 }
 
+// UpdatePassword
+//
+//	@ID			User-Update-Password
+//	@Summary	Upate Password
+//	@Tags		users
+//	@Accept		json
+//	@Produce	json
+//	@Param		credentials	body		UpdatePasswordInput	true	"User Credentials and New Password"
+//	@Success	200			{object}	User
+//	@Failure	400
+//	@Failure	500
+//	@Router		/users/update-password [patch]
 func (r *Routes) UpdatePassword(c *fiber.Ctx) error {
 	var input UpdatePasswordInput
 	err := c.BodyParser(&input)

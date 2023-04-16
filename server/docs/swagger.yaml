@@ -1,0 +1,314 @@
+basePath: /
+definitions:
+  topic.Category:
+    enum:
+    - software
+    - social_sciences
+    type: string
+    x-enum-varnames:
+    - Software
+    - SocialSciences
+  topic.CreateTopicOpts:
+    properties:
+      capacity:
+        type: integer
+      category:
+        $ref: '#/definitions/topic.Category'
+      owner:
+        type: string
+      title:
+        type: string
+    type: object
+  topic.Topic:
+    properties:
+      capacity:
+        description: Max expected parties
+        type: integer
+      cateogry:
+        $ref: '#/definitions/topic.Category'
+      created_at:
+        type: string
+      finished_at:
+        type: string
+      id:
+        type: string
+      owner:
+        description: ID of the owner User
+        type: string
+      parties:
+        description: IDs of invloved Users
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  user.CreateUserOpts:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  user.LoginInput:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  user.UpdatePasswordInput:
+    properties:
+      new_password:
+        type: string
+      password:
+        type: string
+      username:
+        description: 'TODO: From token?'
+        type: string
+    type: object
+  user.User:
+    properties:
+      bio:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Paiwr Server
+  title: Paiwr Server
+  version: "1.0"
+paths:
+  /topics:
+    post:
+      consumes:
+      - application/json
+      operationId: Topic-Create
+      parameters:
+      - description: New Topic Options
+        in: body
+        name: options
+        required: true
+        schema:
+          $ref: '#/definitions/topic.CreateTopicOpts'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      summary: Create Topic
+      tags:
+      - topics
+  /topics/{id}:
+    delete:
+      operationId: Topic-Delete
+      parameters:
+      - description: Topic ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      summary: Delete Topic
+      tags:
+      - topics
+    get:
+      operationId: Topic-Find
+      parameters:
+      - description: Topic ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/topic.Topic'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Find Topic By ID
+      tags:
+      - topics
+  /topics/owner/{id}:
+    get:
+      operationId: Topic-Find-Owned
+      parameters:
+      - description: Owner ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/topic.Topic'
+            type: array
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      summary: Find Topics By Owner ID
+      tags:
+      - topics
+  /topics/pair/{id}:
+    get:
+      operationId: Topic-Find-Paired
+      parameters:
+      - description: Involved ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/topic.Topic'
+            type: array
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      summary: Find Paired Topics By User ID
+      tags:
+      - topics
+  /users/{id}:
+    get:
+      consumes:
+      - application/json
+      operationId: User-FindByID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.User'
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      summary: Find User By ID
+      tags:
+      - users
+  /users/login:
+    post:
+      consumes:
+      - application/json
+      operationId: User-Login
+      parameters:
+      - description: User Credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/user.LoginInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      summary: Login With Credentials
+      tags:
+      - users
+  /users/register:
+    post:
+      consumes:
+      - application/json
+      operationId: User-Register
+      parameters:
+      - description: New User Info
+        in: body
+        name: options
+        required: true
+        schema:
+          $ref: '#/definitions/user.CreateUserOpts'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      summary: Register New User
+      tags:
+      - users
+  /users/update-password:
+    patch:
+      consumes:
+      - application/json
+      operationId: User-Update-Password
+      parameters:
+      - description: User Credentials and New Password
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/user.UpdatePasswordInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.User'
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      summary: Upate Password
+      tags:
+      - users
+swagger: "2.0"

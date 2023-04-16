@@ -16,6 +16,18 @@ func NewRoutes(repo Repo) *Routes {
 	return &Routes{repo: repo}
 }
 
+// Create
+//
+//	@ID			Topic-Create
+//	@Summary	Create Topic
+//	@Tags		topics
+//	@Accept		json
+//	@Produce	json
+//	@Param		options	body	CreateTopicOpts	true	"New Topic Options"
+//	@Success	201
+//	@Failure	400
+//	@Failure	500
+//	@Router		/topics [post]
 func (r *Routes) Create(c *fiber.Ctx) error {
 	var input CreateTopicOpts
 	err := c.BodyParser(&input)
@@ -33,6 +45,18 @@ func (r *Routes) Create(c *fiber.Ctx) error {
 	return c.SendStatus(fiber.StatusCreated)
 }
 
+// FindByID
+//
+//	@ID			Topic-Find
+//	@Summary	Find Topic By ID
+//	@Tags		topics
+//	@Produce	json
+//	@Param		id	path		string	true	"Topic ID"
+//	@Success	200	{object}	Topic
+//	@Failure	400
+//	@Failure	404
+//	@Failure	500
+//	@Router		/topics/{id} [get]
 func (r *Routes) FindByID(c *fiber.Ctx) error {
 	input := c.Params("id")
 	id, err := uuid.Parse(input)
@@ -48,6 +72,17 @@ func (r *Routes) FindByID(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(topic)
 }
 
+// FindByOwnerID
+//
+//	@ID			Topic-Find-Owned
+//	@Summary	Find Topics By Owner ID
+//	@Tags		topics
+//	@Produce	json
+//	@Param		id	path		string	true	"Owner ID"
+//	@Success	200	{object}	[]Topic
+//	@Failure	400
+//	@Failure	500
+//	@Router		/topics/owner/{id} [get]
 func (r *Routes) FindByOwnerID(c *fiber.Ctx) error {
 	input := c.Params("id")
 	id, err := uuid.Parse(input)
@@ -63,6 +98,17 @@ func (r *Routes) FindByOwnerID(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(topic)
 }
 
+// FindInvolved
+//
+//	@ID			Topic-Find-Paired
+//	@Summary	Find Paired Topics By User ID
+//	@Tags		topics
+//	@Produce	json
+//	@Param		id	path		string	true	"Involved ID"
+//	@Success	200	{object}	[]Topic
+//	@Failure	400
+//	@Failure	500
+//	@Router		/topics/pair/{id} [get]
 func (r *Routes) FindInvolved(c *fiber.Ctx) error {
 	input := c.Params("id")
 	id, err := uuid.Parse(input)
@@ -78,6 +124,17 @@ func (r *Routes) FindInvolved(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(topic)
 }
 
+// Delete
+//
+//	@ID			Topic-Delete
+//	@Summary	Delete Topic
+//	@Tags		topics
+//	@Produce	json
+//	@Param		id	path	string	true	"Topic ID"
+//	@Success	200
+//	@Failure	400
+//	@Failure	500
+//	@Router		/topics/{id} [delete]
 func (r *Routes) Delete(c *fiber.Ctx) error {
 	input := c.Params("id")
 	id, err := uuid.Parse(input)
