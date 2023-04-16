@@ -14,6 +14,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sethvargo/go-envconfig"
 	"github.com/wralith/paiwr/server/topic"
+	"github.com/wralith/paiwr/server/user"
 )
 
 func createPool(connStr string) *pgxpool.Pool {
@@ -26,7 +27,7 @@ func createPool(connStr string) *pgxpool.Pool {
 
 // TODO: Default should be replaced with required!
 type Config struct {
-	TopicDb string `env:"TOPIC_DB_URI,default=postgresql://root:secret@localhost:5432/topics?sslmode=disable"`
+	DbConnStr string `env:"TOPIC_DB_URI,default=postgresql://root:secret@localhost:5432/paiwr?sslmode=disable"`
 }
 
 func main() {
@@ -47,13 +48,25 @@ func main() {
 	app.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
 	app.Get("/monitor", monitor.New())
 
-	topicPool := createPool(config.TopicDb)
-	topicRepo := topic.NewPgRepo(topicPool)
+	pool := createPool(config.DbConnStr)
+
+	userRepo := user.NewPgRepo(pool)
+	userRoutes := user.NewRoutes(userRepo)
+
+	topicRepo := topic.NewPgRepo(pool)
 	topicRoutes := topic.NewRoutes(topicRepo)
 
 	if err := topicRepo.MigrateWeirdly(context.Background()); err != nil {
 		log.Fatal(err)
 	}
+	if err := userRepo.MigrateWeirdly(context.Background()); err != nil {
+		log.Fatal(err)
+	}
+
+	app.Post("/user/login", userRoutes.Login)
+	app.Post("/user/register", userRoutes.Register)
+	app.Get("/user/:id", userRoutes.FindByID)
+	app.Patch("/user/update-password", userRoutes.UpdatePassword)
 
 	app.Post("/topics", topicRoutes.Create)
 	app.Get("/topics/:id", topicRoutes.FindByID)
