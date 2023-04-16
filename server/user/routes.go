@@ -2,8 +2,10 @@ package user
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 )
 
@@ -11,11 +13,12 @@ import (
 // TODO: Fix repetitions, especially on error handling
 
 type Routes struct {
-	repo Repo
+	repo      Repo
+	jwtSecret string
 }
 
-func NewRoutes(repo Repo) *Routes {
-	return &Routes{repo: repo}
+func NewRoutes(repo Repo, jwtSecret string) *Routes {
+	return &Routes{repo: repo, jwtSecret: jwtSecret}
 }
 
 // Register
@@ -55,7 +58,12 @@ type LoginInput struct {
 	Password string `json:"password"`
 }
 
-// TODO: Send Token
+type LoginResult struct {
+	ID       uuid.UUID `json:"id"`
+	Token    string    `json:"token"`
+	Username string    `json:"username"`
+	Exp      int64     `json:"exp"`
+}
 
 // Login
 //
@@ -81,7 +89,19 @@ func (r *Routes) Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(map[string]string{"message": "Username and password does not match"})
 	}
 
-	return c.SendStatus(fiber.StatusOK)
+	user, err := r.repo.FindByUsername(context.Background(), input.Username)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(map[string]string{"message": "Unknown error"})
+	}
+
+	exp := time.Now().Add(time.Hour).Unix()
+	claims := jwt.MapClaims{"name": user.Username, "sub": user.ID, "exp": exp}
+	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte("secret"))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(map[string]string{"message": "Unknown error"})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(LoginResult{ID: user.ID, Token: token, Username: user.Username, Exp: exp})
 }
 
 // FindByID
@@ -112,7 +132,6 @@ func (r *Routes) FindByID(c *fiber.Ctx) error {
 }
 
 type UpdatePasswordInput struct {
-	Username    string `json:"username"` // TODO: From token?
 	Password    string `json:"password"`
 	NewPassword string `json:"new_password"`
 }
@@ -122,6 +141,7 @@ type UpdatePasswordInput struct {
 //	@ID			User-Update-Password
 //	@Summary	Upate Password
 //	@Tags		users
+//	@Security	BearerAuth
 //	@Accept		json
 //	@Produce	json
 //	@Param		credentials	body		UpdatePasswordInput	true	"User Credentials and New Password"
@@ -136,14 +156,21 @@ func (r *Routes) UpdatePassword(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(map[string]string{"message": "Unable to parse request"})
 	}
 
-	err = r.repo.VerifyPassword(context.Background(), input.Username, input.Password)
+	userClaims := c.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
+	owner, err := uuid.Parse(userClaims["sub"].(string))
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(map[string]string{"message": "Username and password does not match"})
+		return c.Status(fiber.StatusBadRequest).JSON(map[string]string{"message": "Invalid UUID"})
 	}
 
-	user, err := r.repo.FindByUsername(context.Background(), input.Username)
+	user, err := r.repo.FindByID(context.Background(), owner)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(map[string]string{"message": "Unknown error"})
+	}
+
+	// FIXME: WHY Query WHY?
+	err = r.repo.VerifyPassword(context.Background(), user.Username, input.Password)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(map[string]string{"message": "Username and password does not match"})
 	}
 
 	err = user.UpdatePassword(input.NewPassword)

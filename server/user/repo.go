@@ -120,6 +120,7 @@ func (r *PgRepo) Update(ctx context.Context, u *User) error {
 }
 
 // VerifyPassword returns nil on success
+// TODO: This looks unneccessary or should return user too
 func (r *PgRepo) VerifyPassword(ctx context.Context, username, password string) error {
 	sql, args, err := sq.Select("hashed_password").
 		From("users").

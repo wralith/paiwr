@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 )
 
@@ -16,26 +17,43 @@ func NewRoutes(repo Repo) *Routes {
 	return &Routes{repo: repo}
 }
 
+type CreateInput struct {
+	Capacity int      `json:"capacity"`
+	Category Category `json:"category"`
+	Title    string   `json:"title"`
+}
+
 // Create
 //
 //	@ID			Topic-Create
 //	@Summary	Create Topic
 //	@Tags		topics
+//	@Security	BearerAuth
 //	@Accept		json
 //	@Produce	json
-//	@Param		options	body	CreateTopicOpts	true	"New Topic Options"
+//	@Param		options	body	CreateInput	true	"New Topic Information"
 //	@Success	201
 //	@Failure	400
 //	@Failure	500
 //	@Router		/topics [post]
 func (r *Routes) Create(c *fiber.Ctx) error {
-	var input CreateTopicOpts
+	var input CreateInput
 	err := c.BodyParser(&input)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(map[string]string{"message": "Unable to parse request"})
 	}
+	user := c.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
+	owner, err := uuid.Parse(user["sub"].(string))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(map[string]string{"message": "Invalid UUID"})
+	}
 
-	topic := CreateTopic(input)
+	topic := CreateTopic(CreateTopicOpts{
+		Owner:    owner,
+		Capacity: input.Capacity,
+		Category: input.Category,
+		Title:    input.Title,
+	})
 
 	err = r.repo.Save(context.Background(), &topic)
 	if err != nil {
@@ -129,10 +147,12 @@ func (r *Routes) FindInvolved(c *fiber.Ctx) error {
 //	@ID			Topic-Delete
 //	@Summary	Delete Topic
 //	@Tags		topics
+//	@Security	BearerAuth
 //	@Produce	json
 //	@Param		id	path	string	true	"Topic ID"
 //	@Success	200
 //	@Failure	400
+//	@Failure	404
 //	@Failure	500
 //	@Router		/topics/{id} [delete]
 func (r *Routes) Delete(c *fiber.Ctx) error {
@@ -140,6 +160,21 @@ func (r *Routes) Delete(c *fiber.Ctx) error {
 	id, err := uuid.Parse(input)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(map[string]string{"message": "Invalid UUID"})
+	}
+
+	user := c.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
+	owner, err := uuid.Parse(user["sub"].(string))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(map[string]string{"message": "Invalid UUID"})
+	}
+
+	topic, err := r.repo.FindByID(context.Background(), id)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(map[string]string{"message": fmt.Sprintf("topic with id:`%s` not found", input)})
+	}
+
+	if topic.Owner != owner {
+		return c.SendStatus(fiber.StatusUnauthorized)
 	}
 
 	err = r.repo.Delete(context.Background(), id)

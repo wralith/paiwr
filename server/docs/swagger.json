@@ -1,4 +1,7 @@
 {
+    "schemes": [
+        "http"
+    ],
     "swagger": "2.0",
     "info": {
         "description": "Paiwr Server",
@@ -11,6 +14,11 @@
     "paths": {
         "/topics": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -24,12 +32,12 @@
                 "operationId": "Topic-Create",
                 "parameters": [
                     {
-                        "description": "New Topic Options",
+                        "description": "New Topic Information",
                         "name": "options",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/topic.CreateTopicOpts"
+                            "$ref": "#/definitions/topic.CreateInput"
                         }
                     }
                 ],
@@ -160,6 +168,11 @@
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -183,6 +196,9 @@
                     },
                     "400": {
                         "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
                     },
                     "500": {
                         "description": "Internal Server Error"
@@ -266,6 +282,11 @@
         },
         "/users/update-password": {
             "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -355,7 +376,7 @@
                 "SocialSciences"
             ]
         },
-        "topic.CreateTopicOpts": {
+        "topic.CreateInput": {
             "type": "object",
             "properties": {
                 "capacity": {
@@ -363,9 +384,6 @@
                 },
                 "category": {
                     "$ref": "#/definitions/topic.Category"
-                },
-                "owner": {
-                    "type": "string"
                 },
                 "title": {
                     "type": "string"
@@ -443,10 +461,6 @@
                 },
                 "password": {
                     "type": "string"
-                },
-                "username": {
-                    "description": "TODO: From token?",
-                    "type": "string"
                 }
             }
         },
@@ -472,6 +486,14 @@
                     "type": "string"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Type \"Bearer\" followed by a space and JWT token.",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }

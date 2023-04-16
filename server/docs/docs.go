@@ -17,6 +17,11 @@ const docTemplate = `{
     "paths": {
         "/topics": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -30,12 +35,12 @@ const docTemplate = `{
                 "operationId": "Topic-Create",
                 "parameters": [
                     {
-                        "description": "New Topic Options",
+                        "description": "New Topic Information",
                         "name": "options",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/topic.CreateTopicOpts"
+                            "$ref": "#/definitions/topic.CreateInput"
                         }
                     }
                 ],
@@ -166,6 +171,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -189,6 +199,9 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
                     },
                     "500": {
                         "description": "Internal Server Error"
@@ -272,6 +285,11 @@ const docTemplate = `{
         },
         "/users/update-password": {
             "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -361,7 +379,7 @@ const docTemplate = `{
                 "SocialSciences"
             ]
         },
-        "topic.CreateTopicOpts": {
+        "topic.CreateInput": {
             "type": "object",
             "properties": {
                 "capacity": {
@@ -369,9 +387,6 @@ const docTemplate = `{
                 },
                 "category": {
                     "$ref": "#/definitions/topic.Category"
-                },
-                "owner": {
-                    "type": "string"
                 },
                 "title": {
                     "type": "string"
@@ -449,10 +464,6 @@ const docTemplate = `{
                 },
                 "password": {
                     "type": "string"
-                },
-                "username": {
-                    "description": "TODO: From token?",
-                    "type": "string"
                 }
             }
         },
@@ -479,6 +490,14 @@ const docTemplate = `{
                 }
             }
         }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Type \"Bearer\" followed by a space and JWT token.",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
     }
 }`
 
@@ -487,7 +506,7 @@ var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",
 	BasePath:         "/",
-	Schemes:          []string{},
+	Schemes:          []string{"http"},
 	Title:            "Paiwr Server",
 	Description:      "Paiwr Server",
 	InfoInstanceName: "swagger",
