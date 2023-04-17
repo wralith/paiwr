@@ -30,8 +30,9 @@ func createPool(connStr string) *pgxpool.Pool {
 
 // TODO: Default should be replaced with required!
 type Config struct {
-	DbConnStr string `env:"TOPIC_DB_URI,default=postgresql://root:secret@localhost:5432/paiwr?sslmode=disable"`
-	JWTSecret string `env:"JWT_SECRET,default=secret"`
+	DbConnStr string `env:"DB_CONN_STR,required"`
+	JWTSecret string `env:"JWT_SECRET,required"`
+	Port      string `env:"PORT,default=8080"`
 }
 
 //	@title			Paiwr Server
@@ -100,6 +101,6 @@ func main() {
 	app.Post("/topics", topicRoutes.Create)
 	app.Delete("/topics/:id", topicRoutes.Delete)
 
-	err := app.Listen(":8080")
+	err := app.Listen(":" + config.Port)
 	log.Fatal(err)
 }

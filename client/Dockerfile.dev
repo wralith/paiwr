@@ -1,0 +1,13 @@
+FROM node:alpine
+
+RUN npm install -g pnpm
+
+WORKDIR /app
+
+EXPOSE 3000
+
+COPY . .
+
+RUN pnpm install
+
+CMD ["pnpm", "dev", "--host"]
