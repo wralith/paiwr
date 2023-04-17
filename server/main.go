@@ -20,15 +20,6 @@ import (
 	"github.com/wralith/paiwr/server/user"
 )
 
-func createPool(connStr string) *pgxpool.Pool {
-	pool, err := pgxpool.New(context.Background(), connStr)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return pool
-}
-
-// TODO: Default should be replaced with required!
 type Config struct {
 	DbConnStr string `env:"DB_CONN_STR,required"`
 	JWTSecret string `env:"JWT_SECRET,required"`
@@ -70,7 +61,10 @@ func main() {
 	app.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
 	app.Get("/monitor", monitor.New())
 
-	pool := createPool(config.DbConnStr)
+	pool, err := pgxpool.New(context.Background(), config.DbConnStr)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	userRepo := user.NewPgRepo(pool)
 	userRoutes := user.NewRoutes(userRepo, config.JWTSecret)
@@ -78,12 +72,7 @@ func main() {
 	topicRepo := topic.NewPgRepo(pool)
 	topicRoutes := topic.NewRoutes(topicRepo)
 
-	if err := topicRepo.MigrateWeirdly(context.Background()); err != nil {
-		log.Fatal(err)
-	}
-	if err := userRepo.MigrateWeirdly(context.Background()); err != nil {
-		log.Fatal(err)
-	}
+	migrateDb(config)
 
 	app.Post("/users/login", userRoutes.Login)
 	app.Post("/users/register", userRoutes.Register)
@@ -101,6 +90,6 @@ func main() {
 	app.Post("/topics", topicRoutes.Create)
 	app.Delete("/topics/:id", topicRoutes.Delete)
 
-	err := app.Listen(":" + config.Port)
+	err = app.Listen(":" + config.Port)
 	log.Fatal(err)
 }

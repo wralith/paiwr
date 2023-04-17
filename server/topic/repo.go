@@ -10,8 +10,6 @@ import (
 )
 
 type Repo interface {
-	MigrateWeirdly(ctx context.Context) error
-	DropWeirdly(ctx context.Context) error
 	Save(ctx context.Context, t *Topic) error
 	FindByID(ctx context.Context, id uuid.UUID) (*Topic, error)
 	FindByOwner(ctx context.Context, id uuid.UUID) ([]Topic, error)
@@ -29,28 +27,6 @@ func NewPgRepo(pool *pgxpool.Pool) *PgRepo {
 }
 
 var _ Repo = &PgRepo{}
-
-// well it is a poc, definitely a some migration tool should be used!
-func (r *PgRepo) MigrateWeirdly(ctx context.Context) error {
-	_, err := r.pool.Exec(ctx,
-		`create table if not exists topics (
-		id uuid primary key,
-		category varchar,
-		title varchar,
-		capacity int,
-		owner uuid,
-		parties uuid[],
-		created_at timestamptz,
-		updated_at timestamptz,
-		finished_at timestamptz
-	)`)
-	return err
-}
-
-func (r *PgRepo) DropWeirdly(ctx context.Context) error {
-	_, err := r.pool.Exec(ctx, "drop table if exists topics")
-	return err
-}
 
 func (r *PgRepo) Save(ctx context.Context, t *Topic) error {
 	sql, args, err := sq.Insert("topics").

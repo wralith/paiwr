@@ -11,8 +11,6 @@ import (
 )
 
 type Repo interface {
-	MigrateWeirdly(ctx context.Context) error
-	DropWeirdly(ctx context.Context) error
 	Save(ctx context.Context, u *User) error
 	FindByID(ctx context.Context, id uuid.UUID) (*User, error)
 	FindByUsername(ctx context.Context, username string) (*User, error)
@@ -29,25 +27,6 @@ func NewPgRepo(pool *pgxpool.Pool) *PgRepo {
 }
 
 var _ Repo = &PgRepo{}
-
-func (r *PgRepo) MigrateWeirdly(ctx context.Context) error {
-	_, err := r.pool.Exec(ctx,
-		`create table if not exists users (
-		id uuid primary key,
-		username varchar,
-		email varchar,
-		hashed_password bytea,
-		bio varchar,
-		created_at timestamptz,
-		updated_at timestamptz
-	)`)
-	return err
-}
-
-func (r *PgRepo) DropWeirdly(ctx context.Context) error {
-	_, err := r.pool.Exec(ctx, "drop table if exists users")
-	return err
-}
 
 func (r *PgRepo) Save(ctx context.Context, u *User) error {
 	sql, args, err := sq.Insert("users").

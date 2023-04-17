@@ -6,6 +6,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/orlangure/gnomock"
@@ -30,6 +33,7 @@ var t2 = CreateTopic(CreateTopicOpts{
 })
 
 var repo *PgRepo
+var connStr = ""
 
 func TestMain(m *testing.M) {
 	p := postgres.Preset(
@@ -39,22 +43,25 @@ func TestMain(m *testing.M) {
 	c, _ := gnomock.Start(p)
 	defer func() { _ = gnomock.Stop(c) }()
 
-	pool, _ := pgxpool.New(context.Background(), fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		c.Host, c.DefaultPort(), "test", "secret", "topics",
-	))
+	connStr = fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", "test", "secret", c.Host, c.DefaultPort(), "topics")
+	pool, _ := pgxpool.New(context.Background(), connStr)
 
 	repo = NewPgRepo(pool)
 	m.Run()
 }
 
 func setup(t *testing.T) {
-	err := repo.MigrateWeirdly(context.Background())
+	fmt.Println(connStr)
+	m, err := migrate.New("file://../migrations", connStr)
+	require.NoError(t, err)
+	err = m.Up()
 	require.NoError(t, err)
 }
 
 func teardown(t *testing.T) {
-	repo.DropWeirdly(context.Background())
+	m, err := migrate.New("file://../migrations", connStr)
+	require.NoError(t, err)
+	m.Down()
 }
 
 func TestSave(t *testing.T) {
