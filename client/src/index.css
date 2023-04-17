@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+input {
+  @apply rounded-md border-2 px-2 py-1 focus:outline-violet-600 dark:focus:outline-violet-400;
+}
+
+.btn {
+  @apply rounded-md px-4 py-2;
+}
+
+.btn-lg {
+  @apply rounded-md px-8 py-4 text-lg;
+}
+
+.btn-violet {
+  @apply bg-violet-400 text-black transition-colors hover:bg-violet-300 active:bg-violet-400;
+}
+
+.btn-red {
+  @apply bg-red-400 text-black transition-colors hover:bg-red-300 active:bg-red-400;
+}

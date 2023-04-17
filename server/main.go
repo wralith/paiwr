@@ -46,6 +46,7 @@ type Config struct {
 //	@in							header
 //	@name						Authorization
 //	@description				Type "Bearer" followed by a space and JWT token.
+
 func main() {
 	var config Config
 	if err := envconfig.Process(context.Background(), &config); err != nil {
