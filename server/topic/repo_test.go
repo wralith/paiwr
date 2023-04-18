@@ -61,7 +61,8 @@ func setup(t *testing.T) {
 func teardown(t *testing.T) {
 	m, err := migrate.New("file://../migrations", connStr)
 	require.NoError(t, err)
-	m.Down()
+	err = m.Down()
+	require.NoError(t, err)
 }
 
 func TestSave(t *testing.T) {
@@ -95,6 +96,7 @@ func TestFindByOwner(t *testing.T) {
 	err = repo.Save(context.Background(), &t2)
 	assert.NoError(t, err)
 	got, err := repo.FindByOwner(context.Background(), ownerID)
+	assert.NoError(t, err)
 	assert.Equal(t, t1.Title, got[0].Title)
 	assert.WithinDuration(t, t1.CreatedAt, got[0].CreatedAt, time.Second)
 	assert.Equal(t, t2.Title, got[1].Title)
@@ -109,7 +111,9 @@ func TestFindWhereParties(t *testing.T) {
 	err := t3.AddParties(secondUserID)
 	assert.NoError(t, err)
 	err = repo.Save(context.Background(), &t3)
+	assert.NoError(t, err)
 	got, err := repo.FindInvolved(context.Background(), secondUserID)
+	assert.NoError(t, err)
 	assert.Equal(t, t1.Title, got[0].Title)
 	assert.WithinDuration(t, t1.CreatedAt, got[0].CreatedAt, time.Second)
 }
@@ -125,6 +129,7 @@ func TestUpdate(t *testing.T) {
 	err = repo.Update(context.Background(), &t2)
 	assert.NoError(t, err)
 	got, err := repo.FindByID(context.Background(), t1.ID)
+	assert.NoError(t, err)
 	assert.WithinDuration(t, time.Now(), got.FinishedAt, time.Second)
 }
 

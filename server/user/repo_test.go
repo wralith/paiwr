@@ -52,7 +52,8 @@ func setup(t *testing.T) {
 func teardown(t *testing.T) {
 	m, err := migrate.New("file://../migrations", connStr)
 	require.NoError(t, err)
-	m.Down()
+	err = m.Down()
+	require.NoError(t, err)
 }
 
 func TestSave(t *testing.T) {
@@ -95,15 +96,13 @@ func TestUpdate(t *testing.T) {
 
 	err := repo.Save(context.Background(), &user)
 	assert.NoError(t, err)
-	got, err := repo.FindByID(context.Background(), user.ID)
-	assert.NoError(t, err)
 
 	updatedUser := user
 	updatedUser.UpdateBio("Hello")
 	updatedUser.UpdateEmail("tester@test.com")
 	err = repo.Update(context.Background(), &updatedUser)
 	assert.NoError(t, err)
-	got, err = repo.FindByID(context.Background(), user.ID)
+	got, err := repo.FindByID(context.Background(), user.ID)
 	assert.NoError(t, err)
 
 	assert.Equal(t, got.Bio, "Hello")
