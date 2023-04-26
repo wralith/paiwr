@@ -3,11 +3,11 @@
 @tailwind utilities;
 
 input {
-  @apply rounded-md border-2 px-2 py-1 focus:outline-violet-600 dark:focus:outline-violet-400;
+  @apply rounded-md border-2 outline-none px-2 py-1 focus:outline-violet-600 dark:text-black dark:focus:outline-violet-400;
 }
 
 .btn {
-  @apply rounded-md px-4 py-2;
+  @apply rounded-md px-4 py-2 border-none;
 }
 
 .btn-lg {
@@ -21,3 +21,4 @@ input {
 .btn-red {
   @apply bg-red-400 text-black transition-colors hover:bg-red-300 active:bg-red-400;
 }
+
