@@ -7,20 +7,22 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
+	"github.com/wralith/paiwr/server/pkg/validate"
 )
 
 type Routes struct {
-	repo Repo
+	repo      Repo
+	validator *validate.Validate
 }
 
-func NewRoutes(repo Repo) *Routes {
-	return &Routes{repo: repo}
+func NewRoutes(repo Repo, validator *validate.Validate) *Routes {
+	return &Routes{repo: repo, validator: validator}
 }
 
 type CreateInput struct {
-	Capacity int      `json:"capacity"`
-	Category Category `json:"category"`
-	Title    string   `json:"title"`
+	Capacity int      `json:"capacity" validate:"required,min=1"`
+	Category Category `json:"category" validate:"required"`
+	Title    string   `json:"title" validate:"required,min=3"`
 }
 
 // Create
@@ -42,6 +44,12 @@ func (r *Routes) Create(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(map[string]string{"message": "Unable to parse request"})
 	}
+
+	errs := r.validator.ValidateStruct(input)
+	if errs != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(errs)
+	}
+
 	user := c.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)
 	owner, err := uuid.Parse(user["sub"].(string))
 	if err != nil {

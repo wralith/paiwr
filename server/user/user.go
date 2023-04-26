@@ -18,7 +18,6 @@ type User struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-// Verification
 type CreateUserOpts struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`

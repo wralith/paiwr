@@ -13,6 +13,7 @@ type Category string
 const (
 	Software       Category = "software"
 	SocialSciences Category = "social_sciences"
+	Other          Category = "other"
 )
 
 // Topic represents a topic to study and ID's of users involved

@@ -9,7 +9,7 @@ import { UserService } from "../services/UserService"
 const registerSchema = z.object({
   email: z.string().email("Email is invalid"),
   username: z.string().min(3, "Username must have 3 or more characters."),
-  password: z.string().min(3, "Password must have 3 or more characters."),
+  password: z.string().min(6, "Password must have 6 or more characters."),
 })
 
 export const Register: Component = () => {

@@ -266,7 +266,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/user.CreateUserOpts"
+                            "$ref": "#/definitions/user.RegisterInput"
                         }
                     }
                 ],
@@ -372,24 +372,33 @@ const docTemplate = `{
             "type": "string",
             "enum": [
                 "software",
-                "social_sciences"
+                "social_sciences",
+                "other"
             ],
             "x-enum-varnames": [
                 "Software",
-                "SocialSciences"
+                "SocialSciences",
+                "Other"
             ]
         },
         "topic.CreateInput": {
             "type": "object",
+            "required": [
+                "capacity",
+                "category",
+                "title"
+            ],
             "properties": {
                 "capacity": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
                 },
                 "category": {
                     "$ref": "#/definitions/topic.Category"
                 },
                 "title": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 3
                 }
             }
         },
@@ -431,36 +440,56 @@ const docTemplate = `{
                 }
             }
         },
-        "user.CreateUserOpts": {
+        "user.LoginInput": {
             "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string",
+                    "minLength": 6
+                },
+                "username": {
+                    "type": "string",
+                    "maxLength": 24,
+                    "minLength": 3
+                }
+            }
+        },
+        "user.RegisterInput": {
+            "type": "object",
+            "required": [
+                "email",
+                "password",
+                "username"
+            ],
             "properties": {
                 "email": {
                     "type": "string"
                 },
                 "password": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 6
                 },
                 "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "user.LoginInput": {
-            "type": "object",
-            "properties": {
-                "password": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 24,
+                    "minLength": 3
                 }
             }
         },
         "user.UpdatePasswordInput": {
             "type": "object",
+            "required": [
+                "new_password",
+                "password"
+            ],
             "properties": {
                 "new_password": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 6
                 },
                 "password": {
                     "type": "string"

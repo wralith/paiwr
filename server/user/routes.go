@@ -7,6 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
+	"github.com/wralith/paiwr/server/pkg/validate"
 )
 
 // TODO: Update Email, Password, Bio etc.
@@ -15,10 +16,17 @@ import (
 type Routes struct {
 	repo      Repo
 	jwtSecret string
+	validator *validate.Validate
 }
 
-func NewRoutes(repo Repo, jwtSecret string) *Routes {
-	return &Routes{repo: repo, jwtSecret: jwtSecret}
+func NewRoutes(repo Repo, jwtSecret string, validator *validate.Validate) *Routes {
+	return &Routes{repo: repo, jwtSecret: jwtSecret, validator: validator}
+}
+
+type RegisterInput struct {
+	Username string `json:"username" validate:"required,min=3,max=24"`
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,min=6"`
 }
 
 // Register
@@ -28,19 +36,24 @@ func NewRoutes(repo Repo, jwtSecret string) *Routes {
 //	@Tags		users
 //	@Accept		json
 //	@Produce	json
-//	@Param		options	body	CreateUserOpts	true	"New User Info"
+//	@Param		options	body	RegisterInput	true	"New User Info"
 //	@Success	201
 //	@Failure	400
 //	@Failure	500
 //	@Router		/users/register [post]
 func (r *Routes) Register(c *fiber.Ctx) error {
-	var input CreateUserOpts
+	var input RegisterInput
 	err := c.BodyParser(&input)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(map[string]string{"message": "Unable to parse request"})
 	}
 
-	user, err := CreateUser(input)
+	errs := r.validator.ValidateStruct(input)
+	if errs != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(errs)
+	}
+
+	user, err := CreateUser(CreateUserOpts(input))
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(map[string]string{"message": "Unknown error"})
 	}
@@ -54,8 +67,8 @@ func (r *Routes) Register(c *fiber.Ctx) error {
 }
 
 type LoginInput struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username string `json:"username" validate:"required,min=3,max=24"`
+	Password string `json:"password" validate:"required,min=6"`
 }
 
 type LoginResult struct {
@@ -82,6 +95,11 @@ func (r *Routes) Login(c *fiber.Ctx) error {
 	err := c.BodyParser(&input)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(map[string]string{"message": "Unable to parse request"})
+	}
+
+	errs := r.validator.ValidateStruct(input)
+	if errs != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(errs)
 	}
 
 	err = r.repo.VerifyPassword(context.Background(), input.Username, input.Password)
@@ -132,8 +150,8 @@ func (r *Routes) FindByID(c *fiber.Ctx) error {
 }
 
 type UpdatePasswordInput struct {
-	Password    string `json:"password"`
-	NewPassword string `json:"new_password"`
+	Password    string `json:"password" validate:"required"`
+	NewPassword string `json:"new_password" validate:"required,min=6"`
 }
 
 // UpdatePassword
@@ -154,6 +172,11 @@ func (r *Routes) UpdatePassword(c *fiber.Ctx) error {
 	err := c.BodyParser(&input)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(map[string]string{"message": "Unable to parse request"})
+	}
+
+	errs := r.validator.ValidateStruct(input)
+	if errs != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(errs)
 	}
 
 	userClaims := c.Locals("user").(*jwt.Token).Claims.(jwt.MapClaims)

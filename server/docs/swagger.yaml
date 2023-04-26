@@ -4,18 +4,26 @@ definitions:
     enum:
     - software
     - social_sciences
+    - other
     type: string
     x-enum-varnames:
     - Software
     - SocialSciences
+    - Other
   topic.CreateInput:
     properties:
       capacity:
+        minimum: 1
         type: integer
       category:
         $ref: '#/definitions/topic.Category'
       title:
+        minLength: 3
         type: string
+    required:
+    - capacity
+    - category
+    - title
     type: object
   topic.Topic:
     properties:
@@ -43,28 +51,45 @@ definitions:
       updated_at:
         type: string
     type: object
-  user.CreateUserOpts:
+  user.LoginInput:
+    properties:
+      password:
+        minLength: 6
+        type: string
+      username:
+        maxLength: 24
+        minLength: 3
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  user.RegisterInput:
     properties:
       email:
         type: string
       password:
+        minLength: 6
         type: string
       username:
+        maxLength: 24
+        minLength: 3
         type: string
-    type: object
-  user.LoginInput:
-    properties:
-      password:
-        type: string
-      username:
-        type: string
+    required:
+    - email
+    - password
+    - username
     type: object
   user.UpdatePasswordInput:
     properties:
       new_password:
+        minLength: 6
         type: string
       password:
         type: string
+    required:
+    - new_password
+    - password
     type: object
   user.User:
     properties:
@@ -273,7 +298,7 @@ paths:
         name: options
         required: true
         schema:
-          $ref: '#/definitions/user.CreateUserOpts'
+          $ref: '#/definitions/user.RegisterInput'
       produces:
       - application/json
       responses:

@@ -9,7 +9,7 @@ import { createAuth } from "../store/auth"
 
 const loginSchema = z.object({
   username: z.string().min(3, "Username must have 3 or more characters."),
-  password: z.string().min(3, "Password must have 3 or more characters."),
+  password: z.string().min(6, "Password must have 6 or more characters."),
 })
 
 export const Login: Component = () => {

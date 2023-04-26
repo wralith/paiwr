@@ -16,6 +16,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sethvargo/go-envconfig"
 	_ "github.com/wralith/paiwr/server/docs"
+	"github.com/wralith/paiwr/server/pkg/validate"
 	"github.com/wralith/paiwr/server/topic"
 	"github.com/wralith/paiwr/server/user"
 )
@@ -66,11 +67,13 @@ func main() {
 		log.Fatal(err)
 	}
 
+	validator := validate.NewValidate()
+
 	userRepo := user.NewPgRepo(pool)
-	userRoutes := user.NewRoutes(userRepo, config.JWTSecret)
+	userRoutes := user.NewRoutes(userRepo, config.JWTSecret, validator)
 
 	topicRepo := topic.NewPgRepo(pool)
-	topicRoutes := topic.NewRoutes(topicRepo)
+	topicRoutes := topic.NewRoutes(topicRepo, validator)
 
 	migrateDb(config)
 
