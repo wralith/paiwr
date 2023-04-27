@@ -1,12 +1,14 @@
-import { createRoot, createSignal } from "solid-js"
+import { createRoot } from "solid-js"
+
+import { createLocalStorageSignal } from "../signals/createLocalStorageSignal"
 
 type User = { id: string; username: string }
 
 // TODO: Maybe store it somewhere not the memory?
 function auth() {
-  const [isLoggedIn, setIsLoggedIn] = createSignal(false)
-  const [user, setUser] = createSignal<User | undefined>()
-  const [jwt, setJwt] = createSignal<string | undefined>()
+  const [isLoggedIn, setIsLoggedIn] = createLocalStorageSignal(false, "is-logged-in")
+  const [user, setUser] = createLocalStorageSignal<User | undefined>(undefined, "user")
+  const [jwt, setJwt] = createLocalStorageSignal<string | undefined>(undefined, "user-token")
 
   const login = (jwt: string) => {
     const tokens = jwt.split(".")

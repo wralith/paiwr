@@ -1,16 +1,17 @@
 import { Route, Routes } from "@solidjs/router"
-import { type Component, createSignal } from "solid-js"
+import { type Component, lazy } from "solid-js"
 
+import { OnlyGuests, OnlyUsers } from "./components/Guard"
 import { Navbar } from "./components/Navbar"
-import { Home } from "./pages/Home"
-import { Login } from "./pages/Login"
-import { Logout } from "./pages/Logout"
-import { Register } from "./pages/Register"
+import { createLocalStorageSignal } from "./signals/createLocalStorageSignal"
 
-// TODO: Restricted paths according to auth state
+const Home = lazy(() => import("./pages/Home"))
+const Login = lazy(() => import("./pages/Login"))
+const Logout = lazy(() => import("./pages/Logout"))
+const Register = lazy(() => import("./pages/Register"))
 
 const App: Component = () => {
-  const [dark, setDark] = createSignal(false)
+  const [dark, setDark] = createLocalStorageSignal(false, "theme")
   const toggleDark = () => setDark(!dark())
 
   return (
@@ -19,9 +20,13 @@ const App: Component = () => {
         <Navbar toggleDark={toggleDark} />
         <Routes>
           <Route path="/" component={Home} />
-          <Route path="/login" component={Login} />
-          <Route path="/logout" component={Logout} />
-          <Route path="/register" component={Register} />
+          <OnlyGuests>
+            <Route path="/login" component={Login} />
+            <Route path="/register" component={Register} />
+          </OnlyGuests>
+          <OnlyUsers>
+            <Route path="/logout" component={Logout} />
+          </OnlyUsers>
         </Routes>
       </div>
     </div>

@@ -2,7 +2,7 @@ import { Component } from "solid-js"
 
 import { createAuth } from "../store/auth"
 
-export const Logout: Component = () => {
+const Logout: Component = () => {
   const auth = createAuth
 
   return (
@@ -16,3 +16,5 @@ export const Logout: Component = () => {
     </div>
   )
 }
+
+export default Logout

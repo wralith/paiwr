@@ -12,7 +12,7 @@ const loginSchema = z.object({
   password: z.string().min(6, "Password must have 6 or more characters."),
 })
 
-export const Login: Component = () => {
+const Login: Component = () => {
   const auth = createAuth
   const navigate = useNavigate()
 
@@ -62,3 +62,5 @@ export const Login: Component = () => {
     </div>
   )
 }
+
+export default Login

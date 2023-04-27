@@ -12,7 +12,7 @@ const registerSchema = z.object({
   password: z.string().min(6, "Password must have 6 or more characters."),
 })
 
-export const Register: Component = () => {
+const Register: Component = () => {
   const navigate = useNavigate()
 
   const [, { Form, Field }] = createForm<z.input<typeof registerSchema>>({
@@ -73,3 +73,5 @@ export const Register: Component = () => {
     </div>
   )
 }
+
+export default Register

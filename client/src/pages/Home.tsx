@@ -1,7 +1,7 @@
 import { A } from "@solidjs/router"
 import { Component, createSignal } from "solid-js"
 
-export const Home: Component = () => {
+const Home: Component = () => {
   const [c, setC] = createSignal(0)
 
   return (
@@ -22,3 +22,5 @@ export const Home: Component = () => {
     </div>
   )
 }
+
+export default Home
