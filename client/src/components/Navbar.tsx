@@ -1,5 +1,6 @@
 import { A } from "@solidjs/router"
-import { Component, createEffect, createSignal, For } from "solid-js"
+import { IconMoon, IconSun } from "@tabler/icons-solidjs"
+import { Component, createEffect, createSignal, For, Match, Show, Switch } from "solid-js"
 
 import { createAuth } from "../store/auth"
 
@@ -12,9 +13,9 @@ const guestRoutes: Route[] = [
   { name: "Register", path: "/register" },
 ]
 
-const authenticatedRoutes: Route[] = [{ name: "Logout", path: "/logout" }]
+const authenticatedRoutes: Route[] = []
 
-export const Navbar: Component<{ toggleDark: () => void }> = (props) => {
+export const Navbar: Component<{ dark: boolean; toggleDark: () => void }> = (props) => {
   const auth = createAuth
   const [routes, setRoutes] = createSignal<Route[]>([])
   createEffect(() => {
@@ -26,7 +27,7 @@ export const Navbar: Component<{ toggleDark: () => void }> = (props) => {
       <A class="rounded-lg p-2 text-lg font-bold transition-colors hover:underline" href="/">
         Paiwr
       </A>
-      <ul class="flex gap-4">
+      <ul class="flex items-center gap-4">
         <For each={routes()}>
           {(route) => (
             <li>
@@ -36,12 +37,24 @@ export const Navbar: Component<{ toggleDark: () => void }> = (props) => {
             </li>
           )}
         </For>
-        <li>
-          <span
-            class="cursor-pointer rounded-lg p-2 transition-colors hover:underline"
-            onClick={() => props.toggleDark()}
+        <Show when={auth.isLoggedIn()}>
+          <li
+            class="rounded-lg p-2 transition-colors hover:underline"
+            onClick={() => auth.logout()}
           >
-            Theme
+            Logout
+          </li>
+        </Show>
+        <li>
+          <span class="cursor-pointer" onClick={() => props.toggleDark()}>
+            <Switch>
+              <Match when={props.dark}>
+                <IconSun size="34" class="p-2 transition-colors hover:text-orange-600" />
+              </Match>
+              <Match when={!props.dark}>
+                <IconMoon size="34" class="p-2 transition-colors hover:text-cyan-600" />
+              </Match>
+            </Switch>
           </span>
         </li>
       </ul>
