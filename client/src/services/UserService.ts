@@ -1,5 +1,8 @@
+import { createFetch } from "../signals/createFetch"
+
 async function login(fields: { username: string; password: string }, login: (jwt: string) => void) {
-  const res = await fetch("http://localhost:8080/users/login", {
+  const url = new URL("users/login", import.meta.env.VITE_SERVER_BASE_URL)
+  const res = await createFetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(fields),
@@ -12,7 +15,8 @@ async function login(fields: { username: string; password: string }, login: (jwt
 }
 
 async function register(fields: { username: string; password: string; email: string }) {
-  const res = await fetch("http://localhost:8080/users/register", {
+  const url = new URL("users/register", import.meta.env.VITE_SERVER_BASE_URL)
+  const res = await createFetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(fields),

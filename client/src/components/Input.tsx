@@ -2,7 +2,7 @@ import { JSX, splitProps } from "solid-js"
 
 type Props = {
   name: string
-  type: "text" | "email" | "tel" | "password" | "url" | "date"
+  type: "text" | "email" | "tel" | "password" | "url" | "date" | "number"
   label?: string
   placeholder?: string
   value: string | undefined

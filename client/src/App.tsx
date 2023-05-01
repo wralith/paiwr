@@ -1,13 +1,14 @@
 import { Route, Routes } from "@solidjs/router"
 import { type Component, lazy } from "solid-js"
 
-import { OnlyGuests } from "./components/Guard"
+import { OnlyGuests, OnlyUsers } from "./components/Guard"
 import { Navbar } from "./components/Navbar"
 import { createLocalStorageSignal } from "./signals/createLocalStorageSignal"
 
 const Home = lazy(() => import("./pages/Home"))
 const Login = lazy(() => import("./pages/Login"))
 const Register = lazy(() => import("./pages/Register"))
+const MyTopics = lazy(() => import("./pages/MyTopics"))
 
 const App: Component = () => {
   const [dark, setDark] = createLocalStorageSignal(false, "theme")
@@ -23,6 +24,9 @@ const App: Component = () => {
             <Route path="/login" component={Login} />
             <Route path="/register" component={Register} />
           </OnlyGuests>
+          <OnlyUsers>
+            <Route path="/my-topics" component={MyTopics} />
+          </OnlyUsers>
         </Routes>
       </div>
     </div>

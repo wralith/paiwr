@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-input {
+input, select {
   @apply rounded-md border-2 outline-none px-2 py-1 focus:outline-violet-600 dark:text-black dark:focus:outline-violet-400;
 }
 

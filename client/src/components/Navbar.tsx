@@ -13,7 +13,7 @@ const guestRoutes: Route[] = [
   { name: "Register", path: "/register" },
 ]
 
-const authenticatedRoutes: Route[] = []
+const authenticatedRoutes: Route[] = [{ name: "My Topics", path: "/my-topics" }]
 
 export const Navbar: Component<{ dark: boolean; toggleDark: () => void }> = (props) => {
   const auth = createAuth
