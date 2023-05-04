@@ -409,7 +409,7 @@ const docTemplate = `{
                     "description": "Max expected parties",
                     "type": "integer"
                 },
-                "cateogry": {
+                "category": {
                     "$ref": "#/definitions/topic.Category"
                 },
                 "created_at": {

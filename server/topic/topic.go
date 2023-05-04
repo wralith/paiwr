@@ -19,7 +19,7 @@ const (
 // Topic represents a topic to study and ID's of users involved
 type Topic struct {
 	ID       uuid.UUID `json:"id"`
-	Cateogry Category  `json:"cateogry"`
+	Category Category  `json:"category"`
 	Title    string    `json:"title"`
 
 	// Max expected parties
@@ -51,7 +51,7 @@ func CreateTopic(opts CreateTopicOpts) Topic {
 	now := time.Now()
 	return Topic{
 		ID:        uuid.New(),
-		Cateogry:  opts.Category,
+		Category:  opts.Category,
 		Title:     opts.Title,
 		Capacity:  opts.Capacity,
 		Owner:     opts.Owner,

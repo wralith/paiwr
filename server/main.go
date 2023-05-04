@@ -53,7 +53,7 @@ func main() {
 		Next: func(c *fiber.Ctx) bool {
 			return c.IP() == "127.0.0.1"
 		},
-		Max: 20,
+		Max: 100,
 	}))
 
 	app.Get("/swagger/*", swagger.HandlerDefault)

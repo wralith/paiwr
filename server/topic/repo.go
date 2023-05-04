@@ -31,7 +31,7 @@ var _ Repo = &PgRepo{}
 func (r *PgRepo) Save(ctx context.Context, t *Topic) error {
 	sql, args, err := sq.Insert("topics").
 		Columns("id", "category", "title", "capacity", "owner", "parties", "created_at", "updated_at", "finished_at").
-		Values(t.ID, t.Cateogry, t.Title, t.Capacity, t.Owner, t.Parties, t.CreatedAt, t.UpdatedAt, t.FinishedAt).
+		Values(t.ID, t.Category, t.Title, t.Capacity, t.Owner, t.Parties, t.CreatedAt, t.UpdatedAt, t.FinishedAt).
 		PlaceholderFormat(sq.Dollar).ToSql()
 
 	if err != nil {
@@ -93,7 +93,7 @@ func (r *PgRepo) FindInvolved(ctx context.Context, id uuid.UUID) ([]Topic, error
 
 func (r *PgRepo) Update(ctx context.Context, t *Topic) error {
 	sql, args, err := sq.Update("topics").
-		Set("category", t.Cateogry).
+		Set("category", t.Category).
 		Set("title", t.Title).
 		Set("capacity", t.Capacity).
 		Set("owner", t.Owner).
